@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Sentiment Trading Strategy Backtest</h2>
+    
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="symbol" class="form-control" placeholder="Stock Symbol (e.g. AAPL)" required>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="start_date" class="form-control" value="{{ result.start_date|default:'2025-01-01' }}">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="end_date" class="form-control" value="{{ result.end_date|default:'' }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Run Backtest</button>
+            </div>
+        </div>
+    </form>
+
+    {% if result %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">Price and Sentiment Analysis for {{ result.symbol }}</h5>
+                        <p class="card-subtitle text-muted">{{ result.start_date }} to {{ result.end_date }}</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="combinedChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Trading Signals</h5>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Price</th>
+                                    <th>Sentiment</th>
+                                    <th>Signal</th>
+                                    <th>Headlines</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in result.combined_data %}
+                                    <tr>
+                                        <td>{{ item.0 }}</td>
+                                        <td>${{ item.1 }}</td>
+                                        <td>{{ item.2 }}</td>
+                                        <td>
+                                            {% if item.3 == 'buy' %}
+                                                <span class="badge bg-success">BUY</span>
+                                            {% elif item.3 == 'sell' %}
+                                                <span class="badge bg-danger">SELL</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">HOLD</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>
+                                                {% for headline in item.4 %}
+                                                    {{ headline }}<br>
+                                                {% empty %}
+                                                    No headlines
+                                                {% endfor %}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Performance Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <h5>Strategy Summary</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Total Signals:</strong> {{ result.metrics.total_signals }}</li>
+                                <li><strong>Buy Signals:</strong> {{ result.metrics.buy_signals }}</li>
+                                <li><strong>Sell Signals:</strong> {{ result.metrics.sell_signals }}</li>
+                                <li><strong>Hold Signals:</strong> {{ result.metrics.hold_signals }}</li>
+                            </ul>
+                        </div>
+                        <canvas id="sentimentDistributionChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+                const chartData = JSON.parse("{{ result.chart_data|escapejs }}");
+                const ctx = document.getElementById('combinedChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.dates,
+                        datasets: [
+                            {
+                                label: 'Price',
+                                data: chartData.prices,
+                                borderColor: 'blue',
+                                yAxisID: 'y1'
+                            },
+                            {
+                                label: 'Sentiment',
+                                data: chartData.sentiments,
+                                borderColor: 'green',
+                                yAxisID: 'y2'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        stacked: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Price and Sentiment Over Time'
+                            }
+                        },
+                        scales: {
+                            y1: {
+                                type: 'linear',
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Price'
+                                }
+                            },
+                            y2: {
+                                type: 'linear',
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Sentiment'
+                                },
+                                min: -1,
+                                max: 1
+                            }
+                        }
+                    }
+                });
+
+            const sentimentCtx = document.getElementById('sentimentDistributionChart').getContext('2d');
+            const sentiments = JSON.parse('{{ result.signals|safe|escapejs }}');
+            const sentimentCounts = {
+                positive: sentiments.filter(s => s === 'buy').length,
+                neutral: sentiments.filter(s => s === 'hold').length,
+                negative: sentiments.filter(s => s === 'sell').length
+            };
+
+            new Chart(sentimentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positive', 'Neutral', 'Negative'],
+                    datasets: [{
+                        data: [
+                            sentimentCounts.positive,
+                            sentimentCounts.neutral,
+                            sentimentCounts.negative
+                        ],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(201, 203, 207, 0.7)',
+                            'rgba(255, 99, 132, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Sentiment Distribution'
+                        }
+                    }
+                }
+            });
+        </script>
+    {% else %}
+        <div class="alert alert-info">
+            <h5>How to use this backtester:</h5>
+            <ol>
+                <li>Enter a stock symbol (e.g., AAPL, TSLA)</li>
+                <li>Select date range (default is current year)</li>
+                <li>Click "Run Backtest" to see results</li>
+            </ol>
+            <p>The system will analyze news sentiment and generate trading signals based on sentiment thresholds.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

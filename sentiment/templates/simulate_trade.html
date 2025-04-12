@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Simulate Trade</h2>
+<form method="post" class="border p-4 rounded shadow bg-light">
+    {% csrf_token %}
+    <div class="mb-3">
+    <label for="symbol" class="form-label">Stock Symbol</label>
+    <input type="text" name="symbol" class="form-control" placeholder="Stock Symbol" required>
+    </div>
+    <div class="mb-3">
+    <label for="quantity" class="form-label">Quantity</label>
+    <input type="number" name="quantity" class="form-control" placeholder="Quantity" required>
+    </div>
+    <div class="mb-3">
+    <label for="action" class="form-label">Action</label>
+    <select name="action">
+        <option value="BUY">Buy</option>
+        <option value="SELL">Sell</option>
+    </select>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Simulate</button>
+</form>
+</div>
+{% if success %}
+    <div class="text-center mt-4">
+        <h4 class="text-success">Simulation Successful for {{symbol}}✅</h4>
+        <span class="badge bg-success" style="font-size: 1.2em;">Trade Executed</span>
+        <p class="mt-2">Total Price: <strong>${{ total }}</strong></p>
+        <p>Each Stock Price: <strong>${{ price }}</strong></p>
+    </div>
+{% endif %}
+<script>
+    document.getElementById('simulate-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    
+    const form = new FormData(this);
+    const response = await fetch("{% url 'simulate_trade' %}", {
+        method: 'POST',
+        body: form,
+        headers: {
+            'X-CSRFToken': form.get('csrfmiddlewaretoken')
+        }
+    });
+
+    const data = await response.json();
+    if (data.success) {
+        alert(`Success! ${data.action} ${data.quantity} ${data.stock} @ $${data.price} (Total: $${data.total})`);
+    } else {
+        alert(data.error || "Something went wrong.");
+    }
+});
+
+</script>
+{% endblock %}
