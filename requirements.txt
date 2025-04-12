@@ -6,6 +6,7 @@ Django==5.2
 filelock==3.18.0
 frozendict==2.4.6
 fsspec==2025.3.2
+gunicorn==23.0.0
 huggingface-hub==0.30.2
 idna==3.10
 Jinja2==3.1.6
