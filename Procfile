@@ -1,1 +1,1 @@
-web: gunicorn stock_advisor.wsgi --log-file -
+web: gunicorn myproject.wsgi --workers=1 --threads=1
