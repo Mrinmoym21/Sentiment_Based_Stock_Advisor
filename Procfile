@@ -1,1 +1,1 @@
-web: gunicorn stock_advisor.wsgi --log-file -
+web: gunicorn stock_advisor.wsgi:application --workers=1 
