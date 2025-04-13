@@ -38,7 +38,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">My Portfolio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Your Portfolio</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'simulate_trade' %}">Simulate Trade</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'backtest' %}">Backtest</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'sentiment' %}">Sentiment Analysis</a></li>
