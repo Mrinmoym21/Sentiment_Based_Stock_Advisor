@@ -2,9 +2,42 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    Hello, My name is <h1>Mrinmoy Mandal</h1> I am a student of IIT Kharagpur. I am a M.Tech student of Computer Science and Data Processing. This is a sentiment based stock advisor website.
-    I build this website for my project work. I am using Django as backend and Chart.js for charting. I am using Bootstrap for styling. I am using Yahoo Finance API for stock data and News API for news data.
-    I am using Python for backend and HTML, CSS, JavaScript for frontend. I am using MySQL as database. Here one can virtually trade stocks and can backtest their strategy. I am using sentiment analysis to predict the stock price. I am using Natural Language Processing to analyze the news headlines sentiment.
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold">📈 Sentiment-Based Stock Trading Advisor</h1>
+        <p class="lead mt-3">Understanding real-time sentiment analysis to make smarter investment decisions.</p>
+    </div>
 
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">💡 Why Use This Tool?</h4>
+                    <p class="card-text">
+                        Sometimes, you think of investing in stocks, but you're not sure which ones to pick.
+                        This is where we come in. Our advisor analyzes sentiment data and provides signals
+                        to help guide your investments intelligently.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">📊 Why Sentiment Analysis Matters?</h4>
+                    <p class="card-text">
+                        Sentiment analysis processes financial news and public perception to understand market mood.
+                        It complements traditional metrics like stock prices and volume by offering real-time insights
+                        into optimism, fear, and momentum. This helps traders react to market emotion-driven changes.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4">Login to explore all the features🚀</a>
+    </div>
+</div>
 {% endblock %}
